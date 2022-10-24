@@ -57,7 +57,7 @@ if($_POST){
 
     if($resultat->rowCount() > 0){
         $user = $resultat->fetch(PDO::FETCH_ASSOC);
-        if(!password_verify($mdp, $user['mdp'])){
+        if(password_verify($mdp, $user['mdp'])){
             $_SESSION['user']['id'] = $user['id'];
             $_SESSION['user']['pseudo'] = $user['pseudo'];
             $_SESSION['user']['prenom'] = $user['prenom'];
