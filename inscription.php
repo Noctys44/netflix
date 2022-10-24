@@ -52,7 +52,7 @@ if(!empty($_POST)) {
 
     // Insérer l'user ds la bdd
     if(empty($error)) {
-        $pdo->query("INSERT INTO user (pseudo,mdp,prenom,nom,email,genre,adresse,code_postal,ville) VALUES ('$_POST[pseudo]', '$mdp', '$_POST[prenom]', '$_POST[nom]', '$_POST[email]', '$_POST[genre]', '$_POST[adresse]', '$_POST[postal]', '$_POST[ville]')");
+        $pdo->query("INSERT INTO user (pseudo,mdp,prenom,nom,email,genre,adresse,code_postal,ville) VALUES ('$_POST[pseudo]', '$mdp', '$_POST[prenom]', '$_POST[nom]', '$_POST[email]', '$_POST[genre]', '$_POST[adresse]', '$_POST[code_postal]', '$_POST[ville]')");
         $error .= '<div class="alert alert-success">Vous êtes inscrit</div>';
     }
 
