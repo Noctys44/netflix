@@ -72,6 +72,8 @@ if(!empty($_POST))
         }
     
         $rep= $pdo->query("INSERT INTO user (pseudo, mdp, nom, prenom, email, photo) VALUES ('$_POST[pseudo]', '$_POST[mdp]', '$_POST[nom]', '$_POST[prenom]', '$_POST[email]', '$img_bdd')");
+
+        header('location:connexion.php');
 }
 }
 

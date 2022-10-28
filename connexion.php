@@ -7,7 +7,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'deconnexion'){
     header('location:connexion.php');
 }
 
-if(!empty($_POST)){
+if($_POST){
     if(!empty($_POST['pseudo'])) // Si le pseudo n'est pas vide
     {
         // Je fais une requête pour récupérer les infos du pseudo qui ont été envoyé en POST
@@ -26,7 +26,6 @@ if(!empty($_POST)){
                 $_SESSION['user']['nom'] = $user['nom'];
                 $_SESSION['user']['prenom'] = $user['prenom'];
                 $_SESSION['user']['email'] = $user['email'];
-                $_SESSION['user']['statut'] = $user['statut'];
 
                 header('location:profil.php');
             } else {
@@ -54,7 +53,7 @@ if(!empty($_POST)){
     <div class="row align-items-center justify-content-center" style="height: 100vh;">
         <div class="col-3">
         <h2>Se connecter</h2>
-            <form action="" method="POST" enctype="multipart/form-data"> 
+            <form action="" method="POST"> 
             <?= $content; ?>
                 <label for="pseudo" class="form-label">Pseudo ou e-mail</label>
                 <input type="text" class="form-control" name="pseudo" id="pseudo" placeholder="Pseudo ou e-mail">
