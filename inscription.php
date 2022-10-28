@@ -1,66 +1,83 @@
 <?php
 
-require_once './inc/init.php';
+require_once './inc/header.inc.php';
 
 
 
 $error = '';
 
-if(!empty($_POST)) {
-
-    foreach($_POST as $key =>$valeur){
-        $_POST[$key] = htmlspecialchars(addslashes($valeur));
-    }
+if(!empty($_POST))
+{
 
     $pseudo = $_POST['pseudo'];
-    $nom = $_POST['nom'];
-    $prenom = $_POST['prenom'];
-    $email = $_POST['email'];
     $mdp = $_POST['mdp'];
+    $dispo = $pdo->query("SELECT * FROM user WHERE pseudo ='$pseudo'");
+    $matchesPseudo = '#^[a-zA-Z0-9._-]+$#';
+    $matchesMdp = '#^[a-zA-Z0-9._-!?@#]+$#';
 
-
-
-    // PSEUDO PSEUDO PSEUDO PSEUDO PSEUDO PSEUDO PSEUDO PSEUDO PSEUDO PSEUDO PSEUDO PSEUDO PSEUDO PSEUDO
     // Vérification de la longueur du pseudo
-    $pseudo = addslashes($pseudo);
-    if(strlen($pseudo) <3 || strlen($pseudo) > 20) {
-        $error .= '<div class="alert alert-danger">Le pseudo doit contenir entre 3 et 20 caractères</div>';
-    }
+    // strlen() permet d'avoir la longueur d'une chaine de caractères
+    if(strlen($pseudo) < 3 || strlen($pseudo) > 20)
+    {
+        $error .='<div class="alert alert-danger" role="alert">
+        Le pseudo doit être entre 3 et 20 caractères
+        </div>';
+    };
 
-    // Vérification des caractères autorisés (regex)
+    // Vérfication des caractères des pseudos
+    // preg_match() permet de vérifier une correspondance avec une expression régulières (Regex)
+    if(!preg_match($matchesPseudo, $pseudo))
+    {
+        $error .='<div class="alert alert-danger" role="alert">
+        Le pseudo contient des caractères non autorisés
+        </div>';
+    };
+
+    // Vérification de la disponibilité du pseudo
+    // En utilisant rowCount() afficher un message à l'user si le pseudo existe
+    if($dispo->rowCount() >=1){
+        $error .='<div class="alert alert-danger" role="alert">
+        Ce pseudo existe déjà
+        </div>';
+    }
+    $_POST['mdp'] = password_hash($_POST['pseudo'], PASSWORD_DEFAULT);
     
-    $regExPattern = '#^[a-zA-Z0-9._-]+$#';
-    if(!preg_match($regExPattern, $pseudo)) {
-        $error .= '<div class="alert alert-danger">Caractères autorisés : a-z A-Z 0-9 . _ -</div>';
-    }
+    if(!empty($_FILES['photo']))
+    {
 
-    // Vérification de la disponibilité du pseudo dans la BDD
-    $r = $pdo->query("SELECT * FROM user WHERE pseudo = '$pseudo'");
-    if($r->rowCount() >= 1) {
-        $error .= '<div class="alert alert-danger">Le pseudo est déjà pris </div>';
-    }
+        $nom_img = time() . '' . $_POST['pseudo'] . '' . $_FILES['photo']['name'];
+        
+        $img_doc = RACINE . "photo/$nom_img";
+        $img_bdd = URL . "photo/$nom_img";
+
+        if($_FILES['photo']['size'] <= 8000000)
+        {
+            $data = pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION);
+            
+
+            $tab = ['jpg', 'png', 'jpeg', 'gif', 'JPG', 'PNG', 'JPEG', 'GIF', 'Jpg', 'Png', 'Jpeg', 'Gif'];
+
+            if(in_array($data, $tab))
+            {
+                move_uploaded_file($_FILES['photo']['tmp_name'], $img_doc);
+            } else {
+                $content .='<div class="alert alert-danger" role="alert">
+                Format non autorisé 
+                </div>';
+            } 
+        } else {
+            $content .='<div class="alert alert-danger" role="alert">
+            Vérifier la taille de votre image
+            </div>';
+        }
     
-    // MDP MDP MDP MDP MDP MDP MDP MDP MDP MDP MDP MDP MDP MDP MDP MDP MDP MDP MDP MDP MDP MDP MDP MDP MDP MDP
-    // Vérification de la longueur du mdp
-    if(strlen($mdp) <3 || strlen($mdp) > 20) {
-        $error .= '<div class="alert alert-danger">Le mot de passe doit contenir entre 3 et 20 caractères</div>';
-    }
-
-                
-    // Hacher le mdp
-    $mdp = password_hash($mdp, PASSWORD_DEFAULT);
-
-    // Insérer l'user ds la bdd
-    if(empty($error)) {
-        $pdo->query("INSERT INTO user (pseudo,mdp,prenom,nom,email,genre,adresse,code_postal,ville,photo) VALUES ('$_POST[pseudo]', '$mdp', '$_POST[prenom]', '$_POST[nom]', '$_POST[email]', '$_POST[genre]', '$_POST[adresse]', '$_POST[code_postal]', '$_POST[ville]', '$_POST[photo]' )");
-        $error .= '<div class="alert alert-success">Vous êtes inscrit</div>';
-    }
-
+        $rep= $pdo->query("INSERT INTO user (pseudo, mdp, nom, prenom, email, photo) VALUES ('$_POST[pseudo]', '$_POST[mdp]', '$_POST[nom]', '$_POST[prenom]', '$_POST[email]', '$img_bdd')");
+}
 }
 
 ?>
 
-<?php require_once './inc/header.inc.php'; ?>
+
 
 <div class="container">
     <div class="row align-items-center justify-content-center" style="height: 100vh;">
@@ -84,20 +101,6 @@ if(!empty($_POST)) {
                 <label for="email" class="form-label">Email</label>
                 <input type="email" class="form-control" name="email" id="email">
 
-                <label for="genre">Genre</label><br>
-                <select class="form-select" name="genre">
-                    <option value="m">Homme</option>
-                    <option value="f">Femme</option>                    
-                </select>
-
-                <label for="adresse" class="form-label">Adresse</label>
-                <input type="text" class="form-control" name="adresse" id="adresse">
-
-                <label for="code_postal" class="form-label">Code Postal</label>
-                <input type="text" class="form-control" name="code_postal" id="code_postal">
-
-                <label for="ville" class="form-label">Ville</label>
-                <input type="text" class="form-control" name="ville" id="ville">
 
                 <label for="photo" class="form-label">Photo de profil</label>
                 <input type="file" class="form-control" name="photo" id="photo">

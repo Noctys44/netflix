@@ -1,93 +1,51 @@
 <?php
 
-require_once './inc/init.php';
+require_once './inc/header.inc.php';
 
+if(isset($_GET['action']) && $_GET['action'] == 'deconnexion'){
+    session_destroy();
+    header('location:connexion.php');
+}
 
+if(!empty($_POST)){
+    if(!empty($_POST['pseudo'])) // Si le pseudo n'est pas vide
+    {
+        // Je fais une requête pour récupérer les infos du pseudo qui ont été envoyé en POST
+        $req = $pdo->query("SELECT * FROM user WHERE pseudo = '$_POST[pseudo]'");
 
-// if($_POST){
-//     if(!empty($_POST['pseudo'])) 
-//     {
-        
-//         $req = $pdo->query("SELECT * FROM user WHERE pseudo = '$_POST[pseudo]'");
+        // Si le rowCount() est >= 1 alors il y a un user qui a ce pseudo
+        if($req->rowCount() >= 1)
+        {
+            $user = $req->fetch(PDO::FETCH_ASSOC); // Je fetch pour récupérer les infos dans un tableau
 
-        
-//         if($req->rowCount() >= 1)
-//         {
-            
-//             $user = $req->fetch(PDO::FETCH_ASSOC);
+            // Je vérifie si le mot de passe envoyé en POST correspond au mdp que j'ai dans mon tableau $user qui contient toutes les infos du membre
+            if(password_verify($_POST['mdp'], $user['mdp']))
+            {
+                // Je crée une session qui s'appelle 'user' pour stocker les infos de l'user
+                $_SESSION['user']['pseudo'] = $user['pseudo'];
+                $_SESSION['user']['nom'] = $user['nom'];
+                $_SESSION['user']['prenom'] = $user['prenom'];
+                $_SESSION['user']['email'] = $user['email'];
+                $_SESSION['user']['statut'] = $user['statut'];
 
-            
-//             if(password_verify($_POST['mdp'], $user['mdp']))
-//             {
-          
-//                 $_SESSION['user']['id'] = $user['id'];
-//                 $_SESSION['user']['pseudo'] = $user['pseudo'];
-//                 $_SESSION['user']['prenom'] = $user['prenom'];
-//                 $_SESSION['user']['nom'] = $user['nom'];
-//                 $_SESSION['user']['email'] = $user['email'];
-//                 $_SESSION['user']['genre'] = $user['genre'];
-//                 $_SESSION['user']['adresse'] = $user['adresse'];
-//                 $_SESSION['user']['code_postal'] = $user['code_postal'];
-//                 $_SESSION['user']['ville'] = $user['ville'];
-//                 $_SESSION['user']['photo'] = $user['photo'];
-//                 $_SESSION['user']['statut'] = $user['statut'];
-
-
-//                 header('location:profil.php');
-//             } else {
-//                 $content .= '<div class="alert alert-danger" role="alert">
-//                 Le mot de passe est incorrect
-//                 </div>';
-//             }
-//         } else {
-//             $content .= '<div class="alert alert-danger" role="alert">
-//             Le pseudo est incorrect
-//             </div>';
-//         }
-//     }
-// }
-
-if($_POST){
-    $pseudo = $_POST['pseudo'];
-    $mdp = $_POST['mdp'];
-
-
-    $resultat = $pdo->query("SELECT * FROM user WHERE pseudo = '$pseudo'");
-
-
-    if($resultat->rowCount() > 0){
-        $user = $resultat->fetch(PDO::FETCH_ASSOC);
-        if(password_verify($mdp, $user['mdp'])){
-            $_SESSION['user']['id'] = $user['id'];
-            $_SESSION['user']['pseudo'] = $user['pseudo'];
-            $_SESSION['user']['prenom'] = $user['prenom'];
-            $_SESSION['user']['nom'] = $user['nom'];
-            $_SESSION['user']['email'] = $user['email'];
-            $_SESSION['user']['genre'] = $user['genre'];
-            $_SESSION['user']['adresse'] = $user['adresse'];
-            $_SESSION['user']['code_postal'] = $user['code_postal'];
-            $_SESSION['user']['ville'] = $user['ville'];
-            $_SESSION['user']['photo'] = $user['photo'];
-            $_SESSION['user']['statut'] = $user['statut'];
-
-
-
-            header('location:profil.php');
-
+                header('location:profil.php');
+            } else {
+                $content .= '<div class="alert alert-danger" role="alert">
+                Le mot de passe est incorrect
+                </div>';
+            }
+        } else {
+            $content .= '<div class="alert alert-danger" role="alert">
+            Le pseudo est incorrect
+            </div>';
         }
-        else{
-            $content .= '<div class="alert alert-danger">Erreur sur le pseudo ou sur le mot de passe</div>';
-        }
-    }
-    else{
-        $content .= '<div class="alert alert-danger">Erreur sur le pseudo ou sur le mot de passe</div>';
     }
 }
 
 ?>
 
 
-<?php require_once './inc/header.inc.php'; ?>
+
 
 
 <h1>NETFLIX</h1>
@@ -103,6 +61,7 @@ if($_POST){
 
                 <label for="mdp" class="form-label">Mot de passe</label>
                 <input type="password" class="form-control" name="mdp" id="mdp" placeholder="Mot de passe">
+
                 <p>Pas de compte ? <a href="inscription.php" class="text-decoration-none">Inscrivez-vous !</a></p>
 
                 <input type="submit" class="btn btn-danger btn-lg mt-2" value="Se connecter">
